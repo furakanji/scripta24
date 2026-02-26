@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { PenTool, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { httpsCallable } from "firebase/functions";
+import { functions } from "@/lib/firebase";
 
 export function ContributionInput() {
     const [text, setText] = useState("");
@@ -28,9 +30,6 @@ export function ContributionInput() {
         if (!user) {
             try {
                 await signInWithGoogle();
-                // We return here. In a real app we might want to automatically 
-                // re-trigger compilation or let the user click submit again now that they are logged in.
-                // For simplicity, we just prompt them to click again.
                 return;
             } catch {
                 setError("Errore durante l'autenticazione.");
@@ -41,9 +40,8 @@ export function ContributionInput() {
         setError(null);
         setIsSubmitting(true);
         try {
-            // TODO: Call Cloud Function to submit contribution
-            console.log("Submitting as", user.displayName, ":", text);
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            const submitContribution = httpsCallable(functions, 'submitContribution');
+            await submitContribution({ text });
             setText("");
         } catch (err: any) {
             setError(err.message || "Errore durante l'invio della frase.");
