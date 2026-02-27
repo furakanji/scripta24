@@ -69,7 +69,7 @@ export default function Home() {
           <article className="space-y-6 text-xl leading-relaxed">
             <div className="text-center space-y-2 mb-12">
               <h2 className="text-4xl font-bold font-serif">{story.title}</h2>
-              <p className="text-sm font-sans text-ink-muted uppercase tracking-wider">{story.genre}</p>
+              <p className="text-sm font-sans text-ink-muted uppercase tracking-wider">Genere suggerito: {story.genre}</p>
             </div>
 
             {/* The Spark Incipit */}
