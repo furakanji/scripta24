@@ -23,7 +23,7 @@ try {
 const db = admin.firestore();
 
 // Setup Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-pro" });
 
 async function runGhostwriter() {
@@ -66,7 +66,8 @@ async function runGhostwriter() {
 
         const timeSinceLastActivity = now - lastActivityTimeMillis;
 
-        if (timeSinceLastActivity < ONE_HOUR) {
+        const force = process.argv.includes("--force");
+        if (timeSinceLastActivity < ONE_HOUR && !force) {
             console.log(`⏱️ Ultima attività rilevata a meno di un'ora fa (${Math.round(timeSinceLastActivity / 60000)} minuti fa). Nessun intervento necessario.`);
             process.exit(0);
         }

@@ -3,7 +3,13 @@ on:
   schedule:
     # Esegue al minuto 15 di ogni ora (es. 10:15, 11:15, 12:15...)
     - cron: '15 * * * *'
-  workflow_dispatch: # Permette l'esecuzione manuale da GitHub Actions
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Forza esecuzione ignorando il limite di 1 ora'
+        required: false
+        type: boolean
+        default: true
 jobs:
   run-hortus:
     runs-on: ubuntu-latest
@@ -24,4 +30,4 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         shell: bash
-        run: node runGhostwriter.js
+        run: node runGhostwriter.js ${{ github.event.inputs.force == 'true' && '--force' || '' }}
