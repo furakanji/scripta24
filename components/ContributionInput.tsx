@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { PenTool, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { httpsCallable } from "firebase/functions";
-import { functions } from "@/lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export function ContributionInput() {
     const [text, setText] = useState("");
@@ -40,8 +40,16 @@ export function ContributionInput() {
         setError(null);
         setIsSubmitting(true);
         try {
-            const submitContribution = httpsCallable(functions, 'submitContribution');
-            await submitContribution({ text });
+            const todayStr = new Date().toISOString().split("T")[0];
+            const contribsRef = collection(db, "stories", todayStr, "contributions");
+            await addDoc(contribsRef, {
+                text: text,
+                authorId: user.uid,
+                authorName: user.displayName || "Anonimo",
+                authorImage: user.photoURL || null,
+                createdAt: serverTimestamp(),
+                isGhostwriter: false
+            });
             setText("");
         } catch (err: any) {
             setError(err.message || "Errore durante l'invio della frase.");
