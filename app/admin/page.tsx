@@ -128,45 +128,47 @@ export default function AdminDashboard() {
                         </span>
                     </div>
 
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b-2 border-ink text-xs uppercase tracking-wider text-ink-muted bg-white/50">
-                                <th className="p-4 font-bold">Autore</th>
-                                <th className="p-4 font-bold w-2/3">Testo</th>
-                                <th className="p-4 font-bold text-right">Azioni</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y-2 divide-ink/10">
-                            {loading ? (
-                                <tr><td colSpan={3} className="p-8 text-center"><Loader2 className="animate-spin mx-auto text-ink" /></td></tr>
-                            ) : contributions.length === 0 ? (
-                                <tr><td colSpan={3} className="p-8 text-center text-ink-muted font-bold font-serif italic text-lg">Nessuna contribuzione ancora oggi.</td></tr>
-                            ) : (
-                                contributions.map(ctx => (
-                                    <tr key={ctx.id} className="hover:bg-ink/5 transition-colors group">
-                                        <td className="p-4">
-                                            <div className="flex items-center gap-2">
-                                                <div className={`w-2 h-2 rounded-full ${ctx.isGhostwriter ? 'bg-purple-500' : 'bg-green-500'}`}></div>
-                                                <span className="font-bold text-sm text-ink">{ctx.authorName}</span>
-                                            </div>
-                                        </td>
-                                        <td className="p-4 font-serif text-ink text-lg leading-snug">
-                                            &ldquo;{ctx.text}&rdquo;
-                                        </td>
-                                        <td className="p-4 text-right space-x-2">
-                                            <button
-                                                onClick={() => handleDelete(ctx.id)}
-                                                className="p-2 text-red-500 hover:text-white hover:bg-red-600 border-2 border-transparent hover:border-red-900 rounded transition-all shadow-none hover:shadow-[2px_2px_0px_0px_#7f1d1d] active:translate-y-px active:translate-x-px"
-                                                title="Elimina Definitivamente"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                    <div className="overflow-x-auto w-full">
+                        <table className="w-full text-left border-collapse min-w-[600px]">
+                            <thead>
+                                <tr className="border-b-2 border-ink text-xs uppercase tracking-wider text-ink-muted bg-white/50">
+                                    <th className="p-4 font-bold w-[20%]">Autore</th>
+                                    <th className="p-4 font-bold w-[70%]">Testo</th>
+                                    <th className="p-4 font-bold w-[10%] text-right">Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y-2 divide-ink/10">
+                                {loading ? (
+                                    <tr><td colSpan={3} className="p-8 text-center"><Loader2 className="animate-spin mx-auto text-ink" /></td></tr>
+                                ) : contributions.length === 0 ? (
+                                    <tr><td colSpan={3} className="p-8 text-center text-ink-muted font-bold font-serif italic text-lg">Nessuna contribuzione ancora oggi.</td></tr>
+                                ) : (
+                                    contributions.map(ctx => (
+                                        <tr key={ctx.id} className="hover:bg-ink/5 transition-colors group">
+                                            <td className="p-4 align-top">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${ctx.isGhostwriter ? 'bg-purple-500' : 'bg-green-500'}`}></div>
+                                                    <span className="font-bold text-sm text-ink truncate">{ctx.authorName}</span>
+                                                </div>
+                                            </td>
+                                            <td className="p-4 font-serif text-ink text-lg leading-snug break-words">
+                                                &ldquo;{ctx.text}&rdquo;
+                                            </td>
+                                            <td className="p-4 text-right align-top">
+                                                <button
+                                                    onClick={() => handleDelete(ctx.id)}
+                                                    className="p-2 text-red-500 hover:text-white hover:bg-red-600 border-2 border-transparent hover:border-red-900 rounded transition-all shadow-none hover:shadow-[2px_2px_0px_0px_#7f1d1d] active:translate-y-px active:translate-x-px"
+                                                    title="Elimina Definitivamente"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </main>
         </div>
