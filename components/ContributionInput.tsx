@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { PenTool, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { AuthModal } from "./AuthModal";
 
@@ -33,6 +33,16 @@ export function ContributionInput() {
         try {
             const todayStr = new Date().toISOString().split("T")[0];
             const contribsRef = collection(db, "stories", todayStr, "contributions");
+
+            // Verifica duplicati prima di salvare
+            const duplicateQuery = query(contribsRef, where("text", "==", text));
+            const duplicateSnapshot = await getDocs(duplicateQuery);
+            if (!duplicateSnapshot.empty) {
+                setError("Questa frase è già stata pubblicata in questa storia.");
+                setIsSubmitting(false);
+                return;
+            }
+
             await addDoc(contribsRef, {
                 text: text,
                 authorId: currentUser.uid,
