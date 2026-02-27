@@ -89,7 +89,7 @@ export function ContributionInput() {
                                 setError(null);
                             }}
                             disabled={isSubmitting}
-                            placeholder="Aggiungi la tua frase... (max 50 parole)"
+                            placeholder="Collabora alla stesura del racconto di oggi aggiungendo una frase...(max 50 parole)"
                             className="w-full bg-transparent resize-none outline-none font-serif text-lg py-2 px-1 placeholder:text-ink-faint min-h-[52px] max-h-[120px] disabled:opacity-50"
                             rows={1}
                         />
