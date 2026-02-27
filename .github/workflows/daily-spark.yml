@@ -1,0 +1,34 @@
+name: Daily Spark Story Generator
+
+on:
+  schedule:
+    # Esegue ogni giorno alle 23:00 UTC (mezzanotte o l'1:00 di notte in Italia, a seconda dall'ora legale/solare).
+    - cron: '0 23 * * *'
+  workflow_dispatch: # Permette di far partire lo script anche manualmente dal sito di GitHub
+
+jobs:
+  generate-story:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install @google/generative-ai dotenv firebase-admin
+
+      - name: Create Service Account file
+        run: |
+          echo "$FIREBASE_SERVICE_ACCOUNT" > service.json
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Run Story Generator
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node generateStory.js
