@@ -4,12 +4,20 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Setup Firebase Admin with Service Account
 try {
+    let serviceAccount;
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    } else {
+        serviceAccount = require("./service.json");
+    }
+
     admin.initializeApp({
-        credential: admin.credential.cert(require("./service.json")),
+        credential: admin.credential.cert(serviceAccount),
         projectId: "scripta24-e7b4b",
     });
 } catch (e) {
-    console.log("Firebase already initialized or missing service.json");
+    console.error("Firebase Initialization Error:", e);
+    process.exit(1);
 }
 
 const db = admin.firestore();

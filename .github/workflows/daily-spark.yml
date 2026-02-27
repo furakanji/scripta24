@@ -22,13 +22,8 @@ jobs:
       - name: Install dependencies
         run: npm install @google/generative-ai dotenv firebase-admin
 
-      - name: Create Service Account file
-        run: |
-          echo "$FIREBASE_SERVICE_ACCOUNT" > service.json
-        env:
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-
       - name: Run Story Generator
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
         run: node generateStory.js
