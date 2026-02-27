@@ -31,8 +31,8 @@ export function ContributionInput() {
             try {
                 await signInWithGoogle();
                 return;
-            } catch {
-                setError("Errore durante l'autenticazione.");
+            } catch (err: any) {
+                setError(`Errore auth: ${err.message || 'sconosciuto'}`);
                 return;
             }
         }
