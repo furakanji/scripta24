@@ -15,6 +15,8 @@ const inter = Inter({
   display: "swap",
 });
 
+import { Header } from "@/components/Header";
+
 export const metadata: Metadata = {
   title: "Scripta24 | Ogni giorno una storia nuova",
   description: "Piattaforma di narrazione collettiva effimera ma permanente.",
@@ -31,6 +33,7 @@ export default function RootLayout({
         className={`${lora.variable} ${inter.variable} font-serif antialiased bg-paper text-ink`}
       >
         <AuthProvider>
+          <Header />
           {children}
         </AuthProvider>
       </body>
