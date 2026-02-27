@@ -1,0 +1,27 @@
+name: Ghostwriter J. Hortus
+on:
+  schedule:
+    # Esegue al minuto 15 di ogni ora (es. 10:15, 11:15, 12:15...)
+    - cron: '15 * * * *'
+  workflow_dispatch: # Permette l'esecuzione manuale da GitHub Actions
+jobs:
+  run-hortus:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install @google/generative-ai dotenv firebase-admin
+
+      - name: Run J. Hortus Checker
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        shell: bash
+        run: node runGhostwriter.js
