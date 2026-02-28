@@ -19,7 +19,14 @@ import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   title: "Scripta24 | Ogni giorno una storia nuova",
-  description: "Piattaforma di narrazione collettiva effimera ma permanente.",
+  description: "SCRIPTA24 - OGNI GIORNO UNA STORIA NUOVA",
+  openGraph: {
+    title: "Scripta24",
+    description: "SCRIPTA24 - OGNI GIORNO UNA STORIA NUOVA",
+    siteName: "Scripta24",
+    locale: "it_IT",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
