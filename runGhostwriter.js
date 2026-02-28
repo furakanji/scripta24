@@ -30,7 +30,7 @@ async function runGhostwriter() {
     console.log("👻 Controllo attività per J. Hortus...");
 
     try {
-        const todayStr = new Date().toISOString().split("T")[0];
+        const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Rome', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
         const storyRef = db.collection("stories").doc(todayStr);
 
         const docSnapshot = await storyRef.get();

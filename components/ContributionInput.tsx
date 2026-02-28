@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
 import { AuthModal } from "./AuthModal";
+import { getTodayStr } from "@/lib/date";
 
 export function ContributionInput() {
     const [text, setText] = useState("");
@@ -31,7 +32,7 @@ export function ContributionInput() {
         setError(null);
         setIsSubmitting(true);
         try {
-            const todayStr = new Date().toISOString().split("T")[0];
+            const todayStr = getTodayStr();
             const contribsRef = collection(db, "stories", todayStr, "contributions");
 
             // Verifica duplicati prima di salvare

@@ -6,6 +6,7 @@ import { LayoutDashboard, FileText, Settings, Users, Activity, Trash2, Shield, E
 import { useAuth } from "@/contexts/AuthContext";
 import { collection, query, orderBy, onSnapshot, doc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { getTodayStr } from "@/lib/date";
 
 interface Contribution {
     id: string;
@@ -26,7 +27,7 @@ export default function AdminDashboard() {
     useEffect(() => {
         if (!isAdmin) return;
 
-        const todayStr = new Date().toISOString().split("T")[0];
+        const todayStr = getTodayStr();
         const contribsRef = collection(db, "stories", todayStr, "contributions");
         const q = query(contribsRef, orderBy("createdAt", "desc"));
 
@@ -45,7 +46,7 @@ export default function AdminDashboard() {
     const handleDelete = async (id: string) => {
         if (!confirm("Sei sicuro di voler eliminare questa frase?")) return;
         try {
-            const todayStr = new Date().toISOString().split("T")[0];
+            const todayStr = getTodayStr();
             await deleteDoc(doc(db, "stories", todayStr, "contributions", id));
         } catch (error) {
             console.error("Errore durante l'eliminazione:", error);

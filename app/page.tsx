@@ -5,6 +5,7 @@ import { collection, doc, onSnapshot, query, orderBy } from "firebase/firestore"
 import { db } from "@/lib/firebase";
 import { ContributionInput } from "@/components/ContributionInput";
 import { Footer } from "@/components/Footer";
+import { getTodayStr } from "@/lib/date";
 
 export default function Home() {
   const [story, setStory] = useState<any>(null);
@@ -13,7 +14,7 @@ export default function Home() {
 
   useEffect(() => {
     // 1. Get today's date formatted as YYYY-MM-DD
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = getTodayStr();
 
     // 2. Listen to today's story document
     const storyRef = doc(db, "stories", todayStr);
