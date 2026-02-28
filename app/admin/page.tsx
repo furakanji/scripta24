@@ -22,7 +22,7 @@ export default function AdminDashboard() {
     const [contributions, setContributions] = useState<Contribution[]>([]);
     const [loading, setLoading] = useState(true);
 
-    const isAdmin = user?.email === "franginolucarini@gmail.com";
+    const isAdmin = user?.email === "franginolucarini@gmail.com" || user?.displayName === "franginolucarini@gmail.com";
 
     useEffect(() => {
         if (!isAdmin) return;
