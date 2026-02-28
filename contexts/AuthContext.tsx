@@ -81,6 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const result = await signInAnonymously(auth);
             if (result.user) {
                 await updateProfile(result.user, { displayName: name });
+                await result.user.getIdToken(true); // Force token refresh so Firestore rules see the new displayName
                 setUser({ ...result.user, displayName: name }); // Force local refresh of user state
             }
         } catch (error) {

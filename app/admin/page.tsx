@@ -18,9 +18,11 @@ interface Contribution {
 }
 
 export default function AdminDashboard() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, signInAsGuest } = useAuth();
     const [contributions, setContributions] = useState<Contribution[]>([]);
     const [loading, setLoading] = useState(true);
+    const [adminInput, setAdminInput] = useState("");
+    const [loginLoading, setLoginLoading] = useState(false);
 
     const isAdmin = user?.email === "franginolucarini@gmail.com" || user?.displayName === "franginolucarini@gmail.com";
 
@@ -54,15 +56,49 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleAdminLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (adminInput.trim() === "franginolucarini@gmail.com") {
+            setLoginLoading(true);
+            try {
+                await signInAsGuest(adminInput.trim());
+            } catch (err) {
+                console.error("Errore di blocco durante il login admin:", err);
+                alert("Si è verificato un errore durante l'accesso.");
+            } finally {
+                setLoginLoading(false);
+            }
+        } else {
+            alert("Email amministratore non valida o non autorizzata.");
+        }
+    };
+
     if (authLoading) return <div className="h-screen w-screen flex items-center justify-center bg-paper text-ink"><Loader2 className="animate-spin" /></div>;
 
     if (!user || !isAdmin) {
         return (
-            <div className="flex h-screen items-center justify-center bg-paper flex-col gap-4 font-sans text-ink">
-                <Shield size={48} className="text-red-500" />
-                <h1 className="text-2xl font-black uppercase tracking-tight">Accesso Negato</h1>
-                <p>Non hai i permessi per visualizzare questa pagina.</p>
-                <Link href="/" className="px-4 py-2 bg-ink text-paper font-bold uppercase text-xs hover:bg-ink/80 transition-colors">Torna alla Home</Link>
+            <div className="flex h-screen items-center justify-center bg-paper flex-col gap-6 font-sans text-ink p-4">
+                <Shield size={48} className="text-red-700" />
+                <h1 className="text-3xl font-black uppercase tracking-tighter italic">Pannello di Controllo</h1>
+                <p className="text-ink-muted text-sm max-w-sm text-center">Inserisci l'email di amministrazione per sbloccare la console.</p>
+                <form onSubmit={handleAdminLogin} className="w-full max-w-sm space-y-4">
+                    <input
+                        type="email"
+                        required
+                        value={adminInput}
+                        onChange={(e) => setAdminInput(e.target.value)}
+                        placeholder="tua@email.com"
+                        className="w-full bg-white border-2 border-ink p-4 font-sans outline-none focus:ring-2 focus:ring-ink/20 transition-all font-bold placeholder:font-normal shadow-[inset_2px_2px_0px_0px_rgba(0,0,0,0.05)] text-center text-lg italic"
+                    />
+                    <button
+                        type="submit"
+                        disabled={loginLoading}
+                        className="w-full flex justify-center items-center gap-2 bg-ink text-paper font-bold uppercase tracking-widest py-4 px-4 shadow-[4px_4px_0px_0px_#1a1a1a] hover:bg-ink/90 transition-all active:translate-x-[4px] active:translate-y-[4px] active:shadow-none disabled:opacity-50"
+                    >
+                        {loginLoading ? <Loader2 className="animate-spin" size={20} /> : "Accedi al Pannello"}
+                    </button>
+                </form>
+                <Link href="/" className="mt-8 text-xs font-bold uppercase tracking-widest text-ink-muted hover:text-ink underline">&larr; Torna a Scrivere</Link>
             </div>
         );
     }
