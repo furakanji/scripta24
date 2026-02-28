@@ -7,6 +7,8 @@ import {
     GoogleAuthProvider,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
+    signInAnonymously,
+    updateProfile,
     signOut,
     User
 } from "firebase/auth";
@@ -18,6 +20,7 @@ interface AuthContextType {
     signInWithGoogle: () => Promise<void>;
     signInWithEmail: (e: string, p: string) => Promise<void>;
     signUpWithEmail: (e: string, p: string) => Promise<void>;
+    signInAsGuest: (name: string) => Promise<void>;
     logout: () => Promise<void>;
 }
 
@@ -73,8 +76,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const signInAsGuest = async (name: string) => {
+        try {
+            const result = await signInAnonymously(auth);
+            if (result.user) {
+                await updateProfile(result.user, { displayName: name });
+                setUser({ ...result.user, displayName: name }); // Force local refresh of user state
+            }
+        } catch (error) {
+            console.error("Error signing in as guest", error);
+            throw error;
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, logout }}>
+        <AuthContext.Provider value={{ user, loading, signInWithGoogle, signInWithEmail, signUpWithEmail, signInAsGuest, logout }}>
             {children}
         </AuthContext.Provider>
     );
