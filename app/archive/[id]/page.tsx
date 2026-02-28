@@ -26,8 +26,11 @@ export default function StoryDetail({ params }: { params: { id: string } }) {
     }
 
     return (
-        <div className="flex flex-col min-h-screen max-w-2xl mx-auto px-4 sm:px-6 py-12">
-            <header className="mb-12">
+        <div className="flex flex-col min-h-screen max-w-2xl mx-auto px-4 sm:px-6 py-12 relative">
+            <Link href="/" className="absolute top-4 left-4 sm:left-6 text-ink-muted hover:text-ink transition-colors font-bold text-xs uppercase tracking-widest hidden sm:block">
+                &larr; Torna a Scrivere
+            </Link>
+            <header className="mb-12 mt-8 sm:mt-4">
                 <Link href="/archive" className="text-ink-muted hover:text-red-700 transition-colors flex items-center gap-2 font-sans text-sm mb-8 font-bold uppercase tracking-widest">
                     <ArrowLeft size={16} /> Torna all'archivio
                 </Link>

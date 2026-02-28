@@ -21,9 +21,12 @@ export default function ArchivePage() {
 
     return (
         <div className="flex flex-col min-h-screen max-w-3xl mx-auto px-4 sm:px-6 py-12">
-            <header className="mb-12 flex flex-col items-center sm:items-start sm:flex-row justify-between gap-6">
+            <header className="mb-12 flex flex-col items-center sm:items-start sm:flex-row justify-between gap-6 relative">
+                <Link href="/" className="absolute -top-10 left-0 text-ink-muted hover:text-ink transition-colors font-bold text-xs uppercase tracking-widest">
+                    &larr; Torna a Scrivere
+                </Link>
                 <div>
-                    <h1 className="text-4xl font-black font-sans uppercase italic text-ink mb-2 tracking-tighter" style={{ textShadow: "2px 2px 0px #d1d0ce" }}>Archivio<span className="text-red-700">.</span></h1>
+                    <h1 className="text-4xl font-black font-sans uppercase italic text-ink mb-2 tracking-tighter mt-4 sm:mt-0" style={{ textShadow: "2px 2px 0px #d1d0ce" }}>Archivio<span className="text-red-700">.</span></h1>
                     <p className="text-ink-muted font-sans text-sm tracking-widest uppercase">Le storie collettive dei giorni passati.</p>
                 </div>
                 <Link href="/" className="text-paper bg-ink hover:bg-red-700 transition-colors flex items-center gap-2 font-sans text-sm font-bold uppercase tracking-wider px-6 py-3 rounded-none border border-ink shadow-[4px_4px_0px_0px_#1a1a1a] hover:shadow-[2px_2px_0px_0px_#1a1a1a] hover:translate-x-[2px] hover:translate-y-[2px]">
