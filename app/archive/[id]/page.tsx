@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { SocialCarouselGenerator } from "@/components/SocialCarouselGenerator";
 import { Footer } from "@/components/Footer";
 import { useParams } from "next/navigation";
 import { doc, getDoc, collection, query, orderBy, getDocs } from "firebase/firestore";
@@ -75,12 +74,6 @@ export default function StoryDetail() {
     }
 
     const allTexts = [story.incipit, ...contributions.map(c => c.text)];
-    const carouselTexts = [];
-    // Group into chunks of 2 sentences for the carousel
-    // (If a single block is very long, it might be better to chunk by actual length, but this is a start)
-    for (let i = 0; i < allTexts.length; i += 2) {
-        carouselTexts.push(allTexts.slice(i, i + 2).join(" "));
-    }
 
     return (
         <div className="flex flex-col min-h-screen max-w-2xl mx-auto px-4 sm:px-6 py-12 relative">
@@ -117,9 +110,7 @@ export default function StoryDetail() {
                 )}
             </main>
 
-            <div className="border-t-2 border-ink pt-8 mt-auto mb-16">
-                <SocialCarouselGenerator title={story.title} texts={carouselTexts} />
-            </div>
+
 
             <Footer />
         </div>

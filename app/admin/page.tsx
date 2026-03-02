@@ -7,6 +7,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { collection, query, orderBy, onSnapshot, doc, deleteDoc, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getTodayStr } from "@/lib/date";
+import { SocialCarouselGenerator } from "@/components/SocialCarouselGenerator";
 
 interface Contribution {
     id: string;
@@ -23,7 +24,7 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [adminInput, setAdminInput] = useState("");
     const [loginLoading, setLoginLoading] = useState(false);
-    const [availableStories, setAvailableStories] = useState<{ id: string, title?: string }[]>([]);
+    const [availableStories, setAvailableStories] = useState<{ id: string, title?: string, incipit?: string }[]>([]);
     const [selectedStoryId, setSelectedStoryId] = useState<string>(getTodayStr());
 
     const isAdmin = user?.email === "franginolucarini@gmail.com" || user?.displayName === "franginolucarini@gmail.com";
@@ -39,7 +40,8 @@ export default function AdminDashboard() {
                 const snapshot = await getDocs(q);
                 const stories = snapshot.docs.map(doc => ({
                     id: doc.id,
-                    title: doc.data().title
+                    title: doc.data().title,
+                    incipit: doc.data().incipit
                 }));
                 setAvailableStories(stories);
             } catch (err) {
@@ -128,10 +130,17 @@ export default function AdminDashboard() {
 
     const stats = [
         { label: "Storie Attive", value: "1", icon: <Activity className="text-red-700" size={20} /> },
-        { label: "Storie Archiviate", value: "0", icon: <FileText className="text-ink-muted" size={20} /> },
+        { label: "Storie Archiviate", value: availableStories.length > 0 ? availableStories.length - 1 : 0, icon: <FileText className="text-ink-muted" size={20} /> },
         { label: "Utenti Totali", value: "?", icon: <Users className="text-ink-muted" size={20} /> },
         { label: "Interventi J. Hortus", value: "0", icon: <FileText className="text-ink-muted" size={20} /> },
     ];
+
+    const currentStory = availableStories.find(s => s.id === selectedStoryId);
+    const allTexts = currentStory?.incipit ? [currentStory.incipit, ...contributions.map(c => c.text)] : contributions.map(c => c.text);
+    const carouselTexts = [];
+    for (let i = 0; i < allTexts.length; i += 2) {
+        carouselTexts.push(allTexts.slice(i, i + 2).join(" "));
+    }
 
     return (
         <div className="flex h-screen bg-paper font-sans">
@@ -246,6 +255,10 @@ export default function AdminDashboard() {
                         </table>
                     </div>
                 </div>
+
+                {currentStory && carouselTexts.length > 0 && (
+                    <SocialCarouselGenerator title={currentStory.title || "Storia"} texts={carouselTexts} />
+                )}
             </main>
         </div>
     );
