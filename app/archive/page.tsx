@@ -1,23 +1,33 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { BookOpen } from "lucide-react";
 import { Footer } from "@/components/Footer";
+import { collection, query, where, orderBy, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function ArchivePage() {
-    // In a real app, fetch stories from Firestore where status === "closed"
-    const mockStories = [
-        {
-            id: "2026-02-25",
-            title: "Il Vento di Sabbia",
-            genre: "Fantascienza",
-            summary: "Un'esplorazione onirica e polverosa della futilità dell'attesa umana, raccontata attraverso il frammentario ricordo di un oceano perduto."
-        },
-        {
-            id: "2026-02-24",
-            title: "Memorie di un Orologio",
-            genre: "Realismo Magico",
-            summary: "Una riflessione sul tempo che passa inesorabile dal punto di vista di un oggetto inanimato intrappolato in una casa abbandonata."
+    const [stories, setStories] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchStories() {
+            try {
+                const storiesRef = collection(db, "stories");
+                const q = query(storiesRef, where("status", "==", "closed"), orderBy("id", "desc"));
+                const querySnapshot = await getDocs(q);
+                const fetchedStories = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                setStories(fetchedStories);
+            } catch (error) {
+                console.error("Error fetching stories:", error);
+            } finally {
+                setLoading(false);
+            }
         }
-    ];
+
+        fetchStories();
+    }, []);
 
     return (
         <div className="flex flex-col min-h-screen max-w-3xl mx-auto px-4 sm:px-6 py-12">
@@ -35,27 +45,39 @@ export default function ArchivePage() {
                 </Link>
             </header>
 
-            <main className="space-y-8">
-                {mockStories.map(story => (
-                    <Link key={story.id} href={`/archive/${story.id}`} className="block">
-                        <article className="border border-ink-faint rounded-2xl p-6 bg-white/50 hover:bg-white transition-colors group cursor-pointer">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <h2 className="text-2xl font-bold font-serif text-ink">{story.title}</h2>
-                                    <p className="text-xs font-sans text-ink-muted uppercase tracking-wider mt-1">{story.genre} • {story.id}</p>
+            <main className="space-y-8 flex-1">
+                {loading ? (
+                    <div className="flex justify-center py-20">
+                        <div className="w-8 h-8 rounded-full border-2 border-red-700 border-t-transparent animate-spin"></div>
+                    </div>
+                ) : stories.length === 0 ? (
+                    <div className="text-center py-20 text-ink-muted font-serif italic border border-ink-faint rounded-2xl bg-white/50">
+                        Nessuna storia passata trovata al momento.
+                    </div>
+                ) : (
+                    stories.map(story => (
+                        <Link key={story.id} href={`/archive/${story.id}`} className="block">
+                            <article className="border border-ink-faint rounded-2xl p-6 bg-white/50 hover:bg-white transition-colors group cursor-pointer shadow-sm">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h2 className="text-2xl font-bold font-serif text-ink group-hover:text-red-700 transition-colors flex items-center gap-2">
+                                            {story.title}
+                                        </h2>
+                                        <p className="text-xs font-sans text-ink-muted uppercase tracking-wider mt-1">{story.genre} • {story.id}</p>
+                                    </div>
                                 </div>
-                            </div>
-                            <p className="text-ink italic font-serif leading-relaxed line-clamp-3">
-                                "{story.summary}"
-                            </p>
-                            <div className="mt-6 flex justify-end">
-                                <span className="text-sm font-sans font-medium text-ink-muted group-hover:text-ink transition-colors flex items-center gap-2">
-                                    Leggi tutto &rarr;
-                                </span>
-                            </div>
-                        </article>
-                    </Link>
-                ))}
+                                <p className="text-ink italic font-serif leading-relaxed line-clamp-3 pl-4 border-l-2 border-red-700/20">
+                                    "{story.summary || 'Nessun riassunto disponibile per questo racconto.'}"
+                                </p>
+                                <div className="mt-6 flex justify-end">
+                                    <span className="text-sm font-sans font-medium text-ink-muted group-hover:text-ink transition-colors flex items-center gap-2 uppercase tracking-widest">
+                                        Leggi tutto &rarr;
+                                    </span>
+                                </div>
+                            </article>
+                        </Link>
+                    ))
+                )}
             </main>
         </div>
     );

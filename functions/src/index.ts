@@ -5,6 +5,8 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 admin.initializeApp();
 const db = admin.firestore();
 
+import { getTodayStr } from "./date";
+
 export * from "./cron";
 
 // Initialize Gemini
@@ -69,7 +71,7 @@ export const submitContribution = onCall(async (request) => {
 
     // 4. Save to Firestore
     // We need to get the active story. For now, we mock the logic assuming today's story exists.
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const today = getTodayStr(); // YYYY-MM-DD
     const storyRef = db.collection("stories").doc(today);
 
     try {
@@ -92,3 +94,5 @@ export const submitContribution = onCall(async (request) => {
         throw new HttpsError("internal", "Impossibile salvare il contributo.");
     }
 });
+
+

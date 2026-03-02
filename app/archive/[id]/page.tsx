@@ -1,26 +1,77 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { SocialCarouselGenerator } from "@/components/SocialCarouselGenerator";
 import { Footer } from "@/components/Footer";
+import { doc, getDoc, collection, query, orderBy, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 export default function StoryDetail({ params }: { params: { id: string } }) {
-    // In a real app, fetch story by id from Firestore
-    const story = {
-        id: params.id,
-        title: "Il Vento di Sabbia",
-        genre: "Fantascienza",
-        incipit: "La città sorgeva dove un tempo c'era l'oceano, ora solo una distesa di polvere e rovine scolpite dal vento incessante.",
-        contributions: [
-            "Nessuno ricordava come fosse arrivato lì, ma il sapore del sale era ancora vivo sulle loro labbra secche.",
-            "Guardando l'orizzonte, speravano di scorgere l'ombra di un vascello commerciale, ma solo nubi grigie rispondevano al loro richiamo.",
-            "Fu allora che la campana della vecchia torre riprese a suonare da sola, spinta da una tempesta invisibile."
-        ],
-        summary: "Un'esplorazione onirica e polverosa della futilità dell'attesa umana, raccontata attraverso il frammentario ricordo di un oceano perduto."
-    };
+    const [story, setStory] = useState<any>(null);
+    const [contributions, setContributions] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    const allTexts = [story.incipit, ...story.contributions];
+    useEffect(() => {
+        async function fetchStoryAndContributions() {
+            try {
+                // Fetch the main story
+                const storyDocRef = doc(db, "stories", params.id);
+                const storyDocSnap = await getDoc(storyDocRef);
+
+                if (!storyDocSnap.exists()) {
+                    setError("Storia non trovata.");
+                    setLoading(false);
+                    return;
+                }
+
+                const storyData = { id: storyDocSnap.id, ...storyDocSnap.data() };
+
+                // Fetch the contributions
+                const contribsRef = collection(db, "stories", params.id, "contributions");
+                const q = query(contribsRef, orderBy("createdAt", "asc"));
+                const querySnapshot = await getDocs(q);
+
+                const contribsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+                setStory(storyData);
+                setContributions(contribsData);
+            } catch (err) {
+                console.error("Error fetching story:", err);
+                setError("Si è verificato un errore durante il caricamento della storia.");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        fetchStoryAndContributions();
+    }, [params.id]);
+
+    if (loading) {
+        return (
+            <div className="flex flex-col min-h-screen items-center justify-center">
+                <div className="w-12 h-12 rounded-full border-4 border-red-700 border-t-transparent animate-spin"></div>
+            </div>
+        );
+    }
+
+    if (error || !story) {
+        return (
+            <div className="flex flex-col min-h-screen items-center justify-center space-y-4">
+                <p className="text-2xl font-serif text-ink">{error || "Qualcosa è andato storto."}</p>
+                <Link href="/archive" className="text-red-700 font-bold uppercase tracking-widest text-sm hover:underline">
+                    &larr; Torna all'archivio
+                </Link>
+            </div>
+        );
+    }
+
+    const allTexts = [story.incipit, ...contributions.map(c => c.text)];
     const carouselTexts = [];
     // Group into chunks of 2 sentences for the carousel
+    // (If a single block is very long, it might be better to chunk by actual length, but this is a start)
     for (let i = 0; i < allTexts.length; i += 2) {
         carouselTexts.push(allTexts.slice(i, i + 2).join(" "));
     }
@@ -40,13 +91,24 @@ export default function StoryDetail({ params }: { params: { id: string } }) {
 
             <main className="space-y-6 text-xl leading-relaxed text-ink font-serif mb-12">
                 {allTexts.map((text, idx) => (
-                    <p key={idx}>{text}</p>
+                    <p key={idx} className="group relative">
+                        {idx === 0 ? (
+                            <>
+                                <span className="text-3xl float-left mr-2 font-bold opacity-80 mt-1 text-red-700">{text ? text.charAt(0) : ''}</span>
+                                <span className="relative z-10">{text ? text.slice(1) : ''}</span>
+                            </>
+                        ) : (
+                            <span className="relative z-10">{text}</span>
+                        )}
+                    </p>
                 ))}
 
-                <div className="mt-12 p-8 bg-paper border-2 border-ink shadow-[4px_4px_0px_0px_#1a1a1a]">
-                    <h3 className="font-sans text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-4 border-b border-red-700/20 pb-2">Nota della Redazione (AI)</h3>
-                    <p className="text-base italic text-ink font-serif">{story.summary}</p>
-                </div>
+                {story.summary && (
+                    <div className="mt-12 p-8 bg-paper border-2 border-ink shadow-[4px_4px_0px_0px_#1a1a1a]">
+                        <h3 className="font-sans text-xs font-black uppercase tracking-[0.2em] text-red-700 mb-4 border-b border-red-700/20 pb-2">Nota della Redazione (AI)</h3>
+                        <p className="text-base italic text-ink font-serif">{story.summary}</p>
+                    </div>
+                )}
             </main>
 
             <div className="border-t-2 border-ink pt-8 mt-auto mb-16">

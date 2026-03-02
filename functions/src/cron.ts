@@ -5,13 +5,15 @@ import * as cheerio from "cheerio";
 
 const db = admin.firestore();
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+import { getTodayStr } from "./date";
+
 
 export const dailySpark = onSchedule({
     schedule: "1 0 * * *",
     timeZone: "Europe/Rome"
 }, async (event) => {
     if (!process.env.GEMINI_API_KEY) return;
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayStr();
 
     try {
         // 1. Scrape inspiration
@@ -77,7 +79,7 @@ export const ghostwriterHortus = onSchedule({
     schedule: "every 30 minutes"
 }, async (event) => {
     if (!process.env.GEMINI_API_KEY) return;
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayStr();
     const storyRef = db.collection("stories").doc(today);
 
     try {
@@ -127,7 +129,7 @@ export const closeStoryAndSummarize = onSchedule({
     timeZone: "Europe/Rome"
 }, async (event) => {
     if (!process.env.GEMINI_API_KEY) return;
-    const today = new Date().toISOString().split("T")[0];
+    const today = getTodayStr();
     const storyRef = db.collection("stories").doc(today);
 
     try {
@@ -183,7 +185,7 @@ export const sendDailyRecap = onSchedule({
     // The story to send is from yesterday
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    const storyId = yesterday.toISOString().split("T")[0];
+    const storyId = getTodayStr(yesterday);
 
     try {
         const storyDoc = await db.collection("stories").doc(storyId).get();
