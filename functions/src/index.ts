@@ -94,5 +94,3 @@ export const submitContribution = onCall(async (request) => {
         throw new HttpsError("internal", "Impossibile salvare il contributo.");
     }
 });
-
-

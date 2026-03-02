@@ -5,20 +5,26 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { SocialCarouselGenerator } from "@/components/SocialCarouselGenerator";
 import { Footer } from "@/components/Footer";
+import { useParams } from "next/navigation";
 import { doc, getDoc, collection, query, orderBy, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
-export default function StoryDetail({ params }: { params: { id: string } }) {
+export default function StoryDetail() {
+    const params = useParams();
+    const id = params?.id as string;
+
     const [story, setStory] = useState<any>(null);
     const [contributions, setContributions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        if (!id) return;
+
         async function fetchStoryAndContributions() {
             try {
                 // Fetch the main story
-                const storyDocRef = doc(db, "stories", params.id);
+                const storyDocRef = doc(db, "stories", id);
                 const storyDocSnap = await getDoc(storyDocRef);
 
                 if (!storyDocSnap.exists()) {
@@ -30,7 +36,7 @@ export default function StoryDetail({ params }: { params: { id: string } }) {
                 const storyData = { id: storyDocSnap.id, ...storyDocSnap.data() };
 
                 // Fetch the contributions
-                const contribsRef = collection(db, "stories", params.id, "contributions");
+                const contribsRef = collection(db, "stories", id, "contributions");
                 const q = query(contribsRef, orderBy("createdAt", "asc"));
                 const querySnapshot = await getDocs(q);
 
@@ -47,7 +53,7 @@ export default function StoryDetail({ params }: { params: { id: string } }) {
         }
 
         fetchStoryAndContributions();
-    }, [params.id]);
+    }, [id]);
 
     if (loading) {
         return (
