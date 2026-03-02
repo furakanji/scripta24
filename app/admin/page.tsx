@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LayoutDashboard, FileText, Settings, Users, Activity, Trash2, Shield, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { collection, query, orderBy, onSnapshot, doc, deleteDoc } from "firebase/firestore";
+import { collection, query, orderBy, onSnapshot, doc, deleteDoc, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getTodayStr } from "@/lib/date";
 
@@ -23,14 +23,38 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [adminInput, setAdminInput] = useState("");
     const [loginLoading, setLoginLoading] = useState(false);
+    const [availableStories, setAvailableStories] = useState<{ id: string, title?: string }[]>([]);
+    const [selectedStoryId, setSelectedStoryId] = useState<string>(getTodayStr());
 
     const isAdmin = user?.email === "franginolucarini@gmail.com" || user?.displayName === "franginolucarini@gmail.com";
 
     useEffect(() => {
         if (!isAdmin) return;
 
-        const todayStr = getTodayStr();
-        const contribsRef = collection(db, "stories", todayStr, "contributions");
+        // Fetch all available stories once for the dropdown
+        const fetchStories = async () => {
+            try {
+                const storiesRef = collection(db, "stories");
+                const q = query(storiesRef, orderBy("id", "desc"));
+                const snapshot = await getDocs(q);
+                const stories = snapshot.docs.map(doc => ({
+                    id: doc.id,
+                    title: doc.data().title
+                }));
+                setAvailableStories(stories);
+            } catch (err) {
+                console.error("Errore recupero storie:", err);
+            }
+        };
+
+        fetchStories();
+    }, [isAdmin]);
+
+    useEffect(() => {
+        if (!isAdmin || !selectedStoryId) return;
+
+        setLoading(true);
+        const contribsRef = collection(db, "stories", selectedStoryId, "contributions");
         const q = query(contribsRef, orderBy("createdAt", "desc"));
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -43,13 +67,12 @@ export default function AdminDashboard() {
         });
 
         return () => unsubscribe();
-    }, [isAdmin]);
+    }, [isAdmin, selectedStoryId]);
 
     const handleDelete = async (id: string) => {
         if (!confirm("Sei sicuro di voler eliminare questa frase?")) return;
         try {
-            const todayStr = getTodayStr();
-            await deleteDoc(doc(db, "stories", todayStr, "contributions", id));
+            await deleteDoc(doc(db, "stories", selectedStoryId, "contributions", id));
         } catch (error) {
             console.error("Errore durante l'eliminazione:", error);
             alert("Errore durante l'eliminazione. Controlla i permessi.");
@@ -157,12 +180,28 @@ export default function AdminDashboard() {
                 </div>
 
                 <div className="bg-paper border-2 border-ink shadow-[4px_4px_0px_0px_#1a1a1a] overflow-hidden">
-                    <div className="p-4 border-b-2 border-ink bg-ink/5 flex justify-between items-center">
-                        <h3 className="font-bold text-sm uppercase tracking-widest text-ink">Contribuzioni di Oggi</h3>
-                        <span className="flex items-center gap-2 text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full uppercase tracking-wider border border-green-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
-                            Live Sync
-                        </span>
+                    <div className="p-4 border-b-2 border-ink bg-ink/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div className="flex items-center gap-4">
+                            <h3 className="font-bold text-sm uppercase tracking-widest text-ink">Contribuzioni di</h3>
+                            <select
+                                value={selectedStoryId}
+                                onChange={(e) => setSelectedStoryId(e.target.value)}
+                                className="bg-white border-2 border-ink text-ink font-bold text-sm py-1 px-3 outline-none focus:ring-2 focus:ring-ink/20 shadow-[2px_2px_0px_0px_#1a1a1a] cursor-pointer"
+                            >
+                                <option value={getTodayStr()}>Oggi (Live)</option>
+                                {availableStories.filter(s => s.id !== getTodayStr()).map(story => (
+                                    <option key={story.id} value={story.id}>
+                                        {new Date(story.id).toLocaleDateString('it-IT')} - {story.title || "Senza Titolo"}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        {selectedStoryId === getTodayStr() && (
+                            <span className="flex items-center gap-2 text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full uppercase tracking-wider border border-green-200 shrink-0">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                Live Sync
+                            </span>
+                        )}
                     </div>
 
                     <div className="overflow-x-auto w-full">
@@ -178,7 +217,7 @@ export default function AdminDashboard() {
                                 {loading ? (
                                     <tr><td colSpan={3} className="p-8 text-center"><Loader2 className="animate-spin mx-auto text-ink" /></td></tr>
                                 ) : contributions.length === 0 ? (
-                                    <tr><td colSpan={3} className="p-8 text-center text-ink-muted font-bold font-serif italic text-lg">Nessuna contribuzione ancora oggi.</td></tr>
+                                    <tr><td colSpan={3} className="p-8 text-center text-ink-muted font-bold font-serif italic text-lg">Nessuna contribuzione trovata.</td></tr>
                                 ) : (
                                     contributions.map(ctx => (
                                         <tr key={ctx.id} className="hover:bg-ink/5 transition-colors group">
